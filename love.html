@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>恋爱占有欲深度测试</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- html2canvas for Screenshot -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* 基础重置与字体优化 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: #fdf2f8; /* pink-50 */
+            color: #1f2937;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 隐藏滚动条但保留功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 动画类 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* 按钮点击态 */
+        .btn-active:active {
+            transform: scale(0.98);
+            transition: transform 0.1s;
+        }
+
+        /* 弹窗遮罩动画 */
+        .modal-enter {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- 50道测试题数据库 ---
+        const questionsDB = [
+            "如果你伴侣的手机响了，你会有一种强烈的冲动想去看是谁发的消息。",
+            "你不喜欢伴侣有异性知己，即使他们认识的时间比你还长。",
+            "如果伴侣没有秒回你的消息，你会开始胡思乱想。",
+            "你希望知道伴侣每一分钟的行踪。",
+            "你经常翻看伴侣的社交媒体动态，查看点赞和评论的人是谁。",
+            "你认为恋爱中的人应该没有任何秘密。",
+            "如果伴侣想独自去旅行，你会感到非常不安或生气。",
+            "你常常担心伴侣会遇到比你更好的人而离开你。",
+            "你不喜欢伴侣夸赞其他的异性。",
+            "你希望伴侣把所有的空闲时间都花在你身上。",
+            "如果伴侣因为工作忙碌忽略了你，你会觉得他不爱你了。",
+            "你曾经偷偷查看过伴侣的手机或聊天记录。",
+            "你很难接受伴侣有你不知道的过去。",
+            "当伴侣和朋友聚会时，你会要求他/她随时拍照报备。",
+            "你认为伴侣穿什么衣服出门应该经过你的同意。",
+            "你经常询问伴侣“你爱不爱我”来获得确认。",
+            "如果伴侣对你的态度稍微冷淡一点，你就会陷入焦虑。",
+            "你不喜欢伴侣在没有你的情况下玩得很开心。",
+            "你觉得伴侣的社交圈子太广是一种威胁。",
+            "你希望成为伴侣生命中唯一重要的人，甚至超过亲人。",
+            "看到伴侣和别人聊得很投机，你会感到心里不舒服。",
+            "你会因为伴侣回复别人的消息比回复你的长而吃醋。",
+            "你倾向于帮伴侣做决定，因为你觉得这样对他/她好。",
+            "如果伴侣更改了手机密码，你会觉得他在隐瞒什么。",
+            "你不喜欢伴侣提及前任的任何事情，即使是客观评价。",
+            "你认为“报备”是恋爱中最基本的义务，必须事无巨细。",
+            "你有时会故意让伴侣嫉妒，以测试他对你的在乎程度。",
+            "你很难信任伴侣身边的单身异性同事。",
+            "如果伴侣想拥有独处的空间，你会觉得这是一种疏远。",
+            "你会限制伴侣的某些爱好，因为那会占用你们相处的时间。",
+            "你经常拿自己和伴侣身边的人做比较。",
+            "你认为伴侣应该无条件站在你这边，即使你是错的。",
+            "如果伴侣不把合照发朋友圈，你会非常介意。",
+            "你很难忍受伴侣有任何事情瞒着你。",
+            "你会在脑海中预演伴侣背叛你的场景，并因此感到难过。",
+            "你觉得为了爱情，牺牲一部分个人自由是理所应当的。",
+            "你曾要求伴侣删除某些你不喜欢的联系人。",
+            "你对伴侣的行踪了解得越详细，你就越有安全感。",
+            "你认为两个人在一起就应该共享账号密码。",
+            "你会因为伴侣没有注意到你的新发型或衣服而生气。",
+            "你觉得伴侣如果不回复消息，就不应该发朋友圈。",
+            "你很难接受伴侣在吵架后选择回避或冷战。",
+            "你会通过伴侣的消费记录来推断他的行踪。",
+            "你认为伴侣不仅要是恋人，还要是你最好的朋友和心理咨询师。",
+            "如果伴侣称赞路人好看，你会立刻感到不悦。",
+            "你经常担心这段关系会突然结束。",
+            "你觉得你的情绪完全取决于伴侣对你的态度。",
+            "你会因为伴侣没有在节日送出符合预期的礼物而质疑感情。",
+            "你希望伴侣的未来规划里全部都是关于你的。",
+            "为了留住对方，你愿意做任何改变，甚至失去自我。"
+        ];
+
+        // --- 结果分析逻辑 ---
+        const analyzeResult = (score) => {
+            if (score <= 25) {
+                return {
+                    level: "佛系/疏离型",
+                    color: "text-green-600",
+                    bg: "bg-green-100",
+                    attachment: "回避型依恋 (Avoidant)",
+                    description: "你的占有欲非常低，甚至可能显得有些疏离。你非常看重个人空间和独立性，不仅给自己，也给伴侣极大的自由。但这有时会让伴侣觉得你不够在乎他/她。",
+                    behavior: "你几乎从不查岗，也不介意伴侣有异性朋友。当伴侣表现出强烈的依赖时，你可能会下意识地想逃离。你更喜欢‘搭伙过日子’般的轻松模式，而不是‘如胶似漆’的粘腻。",
+                    partner_suggestion: "适合同样独立、有自己生活重心的伴侣（如安全型）。请尽量避开重度焦虑型伴侣，因为他们的索取会让感到窒息，而你的冷淡会让他们抓狂。",
+                    blind_spot: "容易因为过于强调边界感，而忽略了伴侣的情感连接需求，被误解为‘冷暴力’或‘不爱了’。",
+                    cause: "可能源于原生家庭中过度的独立教育，或者曾经历过被束缚的关系，导致你潜意识里抗拒亲密连接带来的负担。",
+                    advice: "适度的占有欲其实是‘在乎’的表现。尝试多向伴侣表达你的情感需求，不要把‘独立’变成‘冷漠’的挡箭牌。"
+                };
+            } else if (score <= 50) {
+                return {
+                    level: "安全/平衡型",
+                    color: "text-blue-600",
+                    bg: "bg-blue-100",
+                    attachment: "安全型依恋 (Secure)",
+                    description: "恭喜！你的占有欲处于非常健康的水平。你信任伴侣，也自信于这段关系。你懂得在亲密和独立之间找到平衡，既能享受二人世界，也能尊重彼此的差异。",
+                    behavior: "你偶尔会吃醋，但这更多是一种情趣而非控制。你不需要通过查看手机来获得安全感。即使伴侣短暂失联，你也能安稳地做自己的事情。",
+                    partner_suggestion: "你是恋爱市场的‘万能适配者’。你能治愈焦虑型的不安，也能用耐心温暖回避型的心。当然，找一个同样的安全型伴侣会让你的生活最轻松。",
+                    blind_spot: "有时候你可能过于理智，认为‘这没什么大不了’，从而忽略了伴侣当下的情绪波动，被认为不够敏感。",
+                    cause: "你拥有稳定的自尊体系，内心安全感充足。这种健康的心理状态通常源于良好的成长环境或成功的自我疗愈。",
+                    advice: "保持这种状态。你是非常理想的恋爱对象，继续用你的包容和信任去滋养这段关系吧。"
+                };
+            } else if (score <= 75) {
+                return {
+                    level: "焦虑/依恋型",
+                    color: "text-yellow-600",
+                    bg: "bg-yellow-100",
+                    attachment: "焦虑型依恋 (Anxious)",
+                    description: "你有较强的占有欲，这源于你对关系的重视，但也伴随着不安全感。你容易胡思乱想，需要伴侣频繁的确认和陪伴。你的爱很热烈，但有时会让人感到压力。",
+                    behavior: "你对细节非常敏感（比如回复微信的字数、语气）。吵架时你倾向于追着对方把话说清楚，无法忍受冷处理。你容易自我感动，也容易因为一点小事觉得自己被抛弃。",
+                    partner_suggestion: "你需要一个情绪稳定、事事有回应的伴侣。避免找回避型伴侣，那会开启‘你追我逃’的痛苦循环。",
+                    blind_spot: "容易把‘爱’和‘融合’混淆，试图通过消灭彼此的界限来获得安全感，这往往会把对方推得更远。",
+                    cause: "可能源于内心深处对‘被抛弃’的恐惧。你也许把太多的自我价值感绑定在了伴侣的反馈上。",
+                    advice: "建立‘自我安全感’是关键。尝试培养自己的兴趣爱好，减少对伴侣的情绪依赖。记住，伴侣的独处不是不爱你，而是充电。"
+                };
+            } else {
+                return {
+                    level: "极致/掌控型",
+                    color: "text-red-600",
+                    bg: "bg-red-100",
+                    attachment: "恐惧/痴迷型 (Disorganized/Preoccupied)",
+                    description: "你的占有欲非常强，可能已经开始影响到关系的健康。你渴望完全掌控伴侣的行踪和思想，任何风吹草动都会引发你的警觉。这种爱往往伴随着强烈的痛苦和控制。",
+                    behavior: "你可能要求伴侣删除异性联系人，必须秒回信息，甚至限制对方的社交自由。你很难信任对方，总觉得如果不严防死守，对方就会背叛。爱对你来说，更像是一场必须赢的战争。",
+                    partner_suggestion: "你需要一位包容性极强、且边界感非常清晰成熟的伴侣，能够温柔地接住你的情绪，但坚定地拒绝你的无理控制。",
+                    blind_spot: "当控制欲过强时，爱就变成了枷锁。你越是想抓紧沙子，沙子流失得越快。这种高压极易导致关系破裂或走向极端。",
+                    cause: "这通常是极度缺乏安全感的表现，或者曾经历过严重的背叛。你试图通过‘控制’来消除‘不确定性’带来的焦虑。",
+                    advice: "这种高压状态会让双方都窒息。建议尝试‘课题分离’，意识到伴侣是独立的个体。如果焦虑感无法自控，寻求专业心理咨询的帮助会非常有效。"
+                };
+            }
+        };
+
+        // --- 组件：SVG 图标 ---
+        const Icons = {
+            Heart: () => <i className="ph-fill ph-heart text-red-500 text-3xl"></i>,
+            Lock: () => <i className="ph-fill ph-lock-key text-purple-500 text-3xl"></i>,
+            Check: () => <i className="ph-bold ph-check text-white"></i>,
+            ArrowRight: () => <i className="ph-bold ph-arrow-right"></i>,
+            Warning: () => <i className="ph-fill ph-warning-circle text-orange-500"></i>,
+            Chart: () => <i className="ph-fill ph-chart-pie-slice text-blue-500"></i>,
+            Brain: () => <i className="ph-fill ph-brain text-pink-500"></i>,
+            Leaf: () => <i className="ph-fill ph-plant text-green-500"></i>,
+            User: () => <i className="ph-fill ph-user text-indigo-500"></i>,
+            Siren: () => <i className="ph-fill ph-siren text-red-500"></i>,
+            HeartBreak: () => <i className="ph-fill ph-heart-break text-rose-500"></i>,
+            Download: () => <i className="ph-bold ph-download-simple"></i>,
+            X: () => <i className="ph-bold ph-x"></i>,
+            Spinner: () => <i className="ph-bold ph-spinner animate-spin"></i>,
+            Image: () => <i className="ph-fill ph-image"></i>
+        };
+
+        // --- 主程序 ---
+        function App() {
+            const [gameState, setGameState] = useState('intro'); // intro, playing, result
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [answers, setAnswers] = useState([]); // Array of 1-5 scores
+            const [finalScore, setFinalScore] = useState(0);
+            const topRef = useRef(null);
+
+            const startTest = () => {
+                setGameState('playing');
+                window.scrollTo(0, 0);
+            };
+
+            const handleAnswer = (score) => {
+                const newAnswers = [...answers, score];
+                setAnswers(newAnswers);
+
+                if (currentQIndex < questionsDB.length - 1) {
+                    // 下一题
+                    setTimeout(() => {
+                        setCurrentQIndex(currentQIndex + 1);
+                        if(topRef.current) topRef.current.scrollIntoView({ behavior: 'smooth' });
+                    }, 200); 
+                } else {
+                    // 计算结果
+                    finishTest(newAnswers);
+                }
+            };
+
+            const finishTest = (finalAnswers) => {
+                const totalPoints = finalAnswers.reduce((a, b) => a + b, 0);
+                const maxPoints = questionsDB.length * 5;
+                const score = Math.round((totalPoints / maxPoints) * 100);
+                setFinalScore(score);
+                setGameState('result');
+                window.scrollTo(0, 0);
+            };
+
+            const restart = () => {
+                setAnswers([]);
+                setCurrentQIndex(0);
+                setFinalScore(0);
+                setGameState('intro');
+            };
+
+            return (
+                <div className="min-h-screen max-w-md mx-auto bg-white shadow-xl overflow-hidden relative flex flex-col" ref={topRef}>
+                    {/* 顶部装饰 */}
+                    <div className="h-2 bg-gradient-to-r from-pink-400 via-red-400 to-purple-500 w-full shrink-0"></div>
+
+                    {gameState === 'intro' && (
+                        <div className="p-8 flex flex-col items-center justify-center min-h-[90vh] fade-in text-center flex-grow">
+                            <div className="mb-6 bg-pink-100 p-6 rounded-full animate-bounce">
+                                <Icons.Heart />
+                            </div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">恋爱占有欲<br/>深度测试</h1>
+                            <p className="text-gray-500 mb-8 text-sm">基于依恋心理学 • 50道精选测试题</p>
+                            
+                            <div className="bg-gray-50 p-6 rounded-xl text-left text-sm text-gray-600 mb-8 w-full shadow-inner">
+                                <p className="mb-2">💡 <strong>测试说明：</strong></p>
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li>本测试共50题，约需3-5分钟。</li>
+                                    <li>请根据你的<strong>第一直觉</strong>回答。</li>
+                                    <li>没有对错之分，诚实面对自己。</li>
+                                </ul>
+                            </div>
+
+                            <button 
+                                onClick={startTest}
+                                className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2 text-lg btn-active"
+                            >
+                                开始测试 <Icons.ArrowRight />
+                            </button>
+                            <p className="mt-6 text-xs text-gray-400">本测试结果仅供参考，不可作为专业诊断依据</p>
+                        </div>
+                    )}
+
+                    {gameState === 'playing' && (
+                        <div className="p-6 min-h-screen flex flex-col fade-in flex-grow">
+                            {/* 进度条 */}
+                            <div className="mb-8">
+                                <div className="flex justify-between text-xs text-gray-400 mb-2">
+                                    <span>进度</span>
+                                    <span>{currentQIndex + 1} / {questionsDB.length}</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-pink-500 transition-all duration-300 ease-out"
+                                        style={{ width: `${((currentQIndex + 1) / questionsDB.length) * 100}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+
+                            {/* 问题卡片 */}
+                            <div className="flex-grow flex flex-col justify-center mb-8">
+                                <div className="bg-white">
+                                    <span className="inline-block px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-xs font-bold mb-4">
+                                        Q{currentQIndex + 1}
+                                    </span>
+                                    <h2 className="text-xl font-medium text-gray-800 leading-relaxed min-h-[80px]">
+                                        {questionsDB[currentQIndex]}
+                                    </h2>
+                                </div>
+                            </div>
+
+                            {/* 选项按钮 */}
+                            <div className="space-y-3 mt-auto pb-8">
+                                {[
+                                    { text: "非常符合", score: 5, color: "border-red-200 bg-red-50 text-red-700" },
+                                    { text: "比较符合", score: 4, color: "border-pink-200 bg-pink-50 text-pink-700" },
+                                    { text: "一般 / 不确定", score: 3, color: "border-gray-200 bg-gray-50 text-gray-700" },
+                                    { text: "比较不符合", score: 2, color: "border-blue-200 bg-blue-50 text-blue-700" },
+                                    { text: "完全不符合", score: 1, color: "border-green-200 bg-green-50 text-green-700" }
+                                ].map((option) => (
+                                    <button
+                                        key={option.score}
+                                        onClick={() => handleAnswer(option.score)}
+                                        className={`w-full py-4 px-6 border-2 rounded-xl text-left font-medium transition-all duration-200 active:scale-95 btn-active flex justify-between items-center group hover:shadow-md ${option.color} border-transparent`}
+                                    >
+                                        {option.text}
+                                        <span className="w-4 h-4 rounded-full border border-current opacity-30 group-active:bg-current"></span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {gameState === 'result' && (
+                        <ResultPage score={finalScore} onRestart={restart} />
+                    )}
+
+                    {/* Intro 和 Playing 页面的通用 Footer */}
+                    {gameState !== 'result' && (
+                        <div className="py-6 text-center shrink-0 bg-white">
+                            <p className="text-[10px] text-gray-400 font-light tracking-wide">
+                                小红书-心灵栖息树原创 侵权必究
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // --- 结果页组件 ---
+        function ResultPage({ score, onRestart }) {
+            const result = analyzeResult(score);
+            const reportRef = useRef(null);
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [generatedImg, setGeneratedImg] = useState(null);
+
+            const generateReport = async () => {
+                if (!reportRef.current) return;
+                setIsGenerating(true);
+                
+                try {
+                    // 等待一小会儿确保渲染
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    const canvas = await html2canvas(reportRef.current, {
+                        scale: 2, // 提高清晰度
+                        useCORS: true,
+                        backgroundColor: "#ffffff", // 确保背景是白色的
+                        logging: false
+                    });
+                    
+                    const imgData = canvas.toDataURL("image/png");
+                    setGeneratedImg(imgData);
+                } catch (error) {
+                    console.error("生成失败", error);
+                    alert("图片生成失败，请截屏保存");
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+
+            return (
+                <div className="p-0 bg-white fade-in flex-grow flex flex-col relative">
+                    
+                    {/* --- 需要被截图的区域 --- */}
+                    <div ref={reportRef} className="bg-white pb-8">
+                        {/* 头部展示区 */}
+                        <div className="relative bg-gray-900 text-white p-8 pt-12 pb-16 rounded-b-[2.5rem] shadow-xl overflow-hidden">
+                            {/* 背景装饰 */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
+                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transform -translate-x-1/2 translate-y-1/2"></div>
+                            
+                            <div className="relative z-10 flex flex-col items-center text-center">
+                                <h2 className="text-gray-400 text-sm uppercase tracking-wider mb-2">您的占有欲指数</h2>
+                                {/* 修复：为截图清晰度，去除 text-transparent gradient，改用纯色 */}
+                                <div className="text-7xl font-bold text-pink-300 mb-2 drop-shadow-lg">
+                                    {score}
+                                </div>
+                                <div className={`px-4 py-1 rounded-full text-sm font-bold bg-white/10 backdrop-blur-sm border border-white/20 ${result.color.replace('text-', 'text-white ')}`}>
+                                    {result.level}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 详细报告卡片 */}
+                        <div className="px-6 -mt-8 relative z-20 space-y-6">
+                            
+                            {/* 依恋类型卡片 */}
+                            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-blue-100 rounded-lg"><Icons.Lock /></div>
+                                    <h3 className="font-bold text-gray-800">依恋人格分析</h3>
+                                </div>
+                                <p className="font-semibold text-lg text-gray-800 mb-2">{result.attachment}</p>
+                                <p className="text-gray-600 text-sm leading-relaxed text-justify">
+                                    {result.description}
+                                </p>
+                            </div>
+
+                            {/* 潜在行为画像 */}
+                            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-purple-100 rounded-lg"><Icons.User /></div>
+                                    <h3 className="font-bold text-gray-800">潜在行为画像</h3>
+                                </div>
+                                <p className="text-gray-600 text-sm leading-relaxed text-justify">
+                                    {result.behavior}
+                                </p>
+                            </div>
+
+                            {/* 成因分析 */}
+                            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-pink-100 rounded-lg"><Icons.Brain /></div>
+                                    <h3 className="font-bold text-gray-800">深层心理成因</h3>
+                                </div>
+                                <p className="text-gray-600 text-sm leading-relaxed text-justify">
+                                    {result.cause}
+                                </p>
+                            </div>
+
+                             {/* 适合的伴侣 & 雷区 */}
+                             <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-yellow-100 rounded-lg"><Icons.Siren /></div>
+                                    <h3 className="font-bold text-gray-800">恋爱导航</h3>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <h4 className="font-bold text-sm text-gray-700 mb-1 flex items-center gap-1"><Icons.HeartBreak /> 适合的伴侣：</h4>
+                                        <p className="text-gray-600 text-sm">{result.partner_suggestion}</p>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-sm text-gray-700 mb-1 flex items-center gap-1"><Icons.Warning /> 雷区预警：</h4>
+                                        <p className="text-gray-600 text-sm">{result.blind_spot}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 恋爱建议 */}
+                            <div className="bg-gradient-to-br from-gray-50 to-pink-50 rounded-2xl p-6 shadow-md border border-pink-100">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="p-2 bg-green-100 rounded-lg"><Icons.Leaf /></div>
+                                    <h3 className="font-bold text-gray-800">如何获得更舒适的关系？</h3>
+                                </div>
+                                <div className="text-gray-700 text-sm leading-relaxed space-y-3">
+                                    <p><strong>✨ 建议：</strong> {result.advice}</p>
+                                    <div className="h-px bg-pink-200/50 w-full my-3"></div>
+                                    <p className="text-xs text-gray-500 italic">
+                                        “健康的爱不是捆绑，而是两个自由灵魂的同行。”
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 截图里的水印 */}
+                        <div className="pt-8 pb-4 text-center shrink-0">
+                            <p className="text-[12px] text-gray-400 font-bold tracking-wide">
+                                小红书 - 心灵栖息树 原创
+                            </p>
+                            <p className="text-[10px] text-gray-300">
+                                关注查看更多心理测试
+                            </p>
+                        </div>
+                    </div>
+                    {/* --- 截图区域结束 --- */}
+
+                    {/* 底部操作栏 (不会被截图) */}
+                    <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md p-4 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] border-t border-gray-100 z-40 flex gap-3 pb-8">
+                        <button 
+                            onClick={onRestart}
+                            className="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
+                        >
+                            重新测试
+                        </button>
+                        <button 
+                            onClick={generateReport}
+                            disabled={isGenerating}
+                            className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-70"
+                        >
+                            {isGenerating ? <><Icons.Spinner /> 生成中...</> : <><Icons.Image /> 保存报告</>}
+                        </button>
+                    </div>
+                    
+                    {/* 占位符，防止内容被固定底部栏遮挡 */}
+                    <div className="h-24 bg-white"></div>
+
+                    {/* 图片预览 Modal */}
+                    {generatedImg && (
+                        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4 modal-enter" onClick={() => setGeneratedImg(null)}>
+                            <div className="bg-white p-2 rounded-2xl max-h-[85vh] overflow-y-auto max-w-sm w-full relative" onClick={e => e.stopPropagation()}>
+                                <button 
+                                    onClick={() => setGeneratedImg(null)}
+                                    className="absolute top-2 right-2 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 z-10"
+                                >
+                                    <Icons.X />
+                                </button>
+                                <img src={generatedImg} alt="测试报告" className="w-full rounded-xl" />
+                                <div className="text-center mt-3 mb-1">
+                                    <p className="text-sm font-bold text-gray-800 flex items-center justify-center gap-2">
+                                        <Icons.Check /> 长按图片保存到相册
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        即可分享到朋友圈或小红书
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
