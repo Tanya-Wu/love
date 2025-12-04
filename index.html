@@ -9,19 +9,6 @@
     <link rel="preconnect" href="https://cdn.staticfile.net">
     <link rel="dns-prefetch" href="https://cdn.staticfile.net">
 
-    <!-- React & ReactDOM (使用 Staticfile 国内源) -->
-    <script src="https://cdn.staticfile.net/react/18.2.0/umd/react.production.min.js" crossorigin></script>
-    <script src="https://cdn.staticfile.net/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel (使用 Staticfile 国内源) -->
-    <script src="https://cdn.staticfile.net/babel-standalone/7.23.5/babel.min.js"></script>
-
-    <!-- Tailwind CSS (保留官方源，兼容性最好) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- html2canvas (使用 Staticfile 国内源) -->
-    <script src="https://cdn.staticfile.net/html2canvas/1.4.1/html2canvas.min.js"></script>
-
     <style>
         /* 基础重置与字体优化 */
         body {
@@ -54,7 +41,7 @@
         /* 弹窗遮罩动画 */
         .modal-enter { animation: fadeIn 0.3s ease-out; }
 
-        /* 首屏加载动画 CSS */
+        /* 极简加载动画：只保留一个小圆圈，保持界面干净 */
         #initial-loader {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -62,12 +49,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
             z-index: 9999;
             transition: opacity 0.5s ease-out;
         }
         .loader-spinner {
-            width: 40px; height: 40px;
+            width: 32px; height: 32px;
             border: 3px solid #fbcfe8;
             border-top: 3px solid #ec4899;
             border-radius: 50%;
@@ -75,17 +61,29 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
+
+    <!-- React & ReactDOM (使用 Staticfile 国内源) -->
+    <script src="https://cdn.staticfile.net/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.staticfile.net/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (使用 Staticfile 国内源) -->
+    <script src="https://cdn.staticfile.net/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- html2canvas -->
+    <script src="https://cdn.staticfile.net/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-    <!-- 首屏 Loading (在 React 加载前显示) -->
+    <!-- 极简首屏 Loading -->
     <div id="root">
         <div id="initial-loader">
             <div class="loader-spinner"></div>
-            <p style="color: #db2777; margin-top: 15px; font-size: 14px; letter-spacing: 1px;">正在开启测试...</p>
         </div>
     </div>
 
-    <script type="text/babel">
+    <script type="text/babel" data-presets="react">
         const { useState, useEffect, useRef } = React;
 
         // --- 50道测试题数据库 ---
@@ -199,7 +197,7 @@
             }
         };
 
-        // --- 组件：SVG 图标 (内联优化，无需加载外部库) ---
+        // --- 组件：SVG 图标 (内联，确保无网络请求) ---
         const SvgIcon = ({ d, className = "", viewBox = "0 0 256 256", fill = "currentColor", stroke = "none", strokeWidth = "0", strokeLinecap = "butt", strokeLinejoin = "miter", children }) => (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox} className={className} fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin}>
                 {d ? <path d={d} /> : children}
@@ -231,6 +229,15 @@
             const [answers, setAnswers] = useState([]); // Array of 1-5 scores
             const [finalScore, setFinalScore] = useState(0);
             const topRef = useRef(null);
+
+            // 移除首屏加载动画
+            useEffect(() => {
+                const loader = document.getElementById('initial-loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 500);
+                }
+            }, []);
 
             const startTest = () => {
                 setGameState('playing');
