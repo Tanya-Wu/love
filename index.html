@@ -3,361 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>恋爱占有欲深度测试</title>
+    <title>友情占有欲深度测试</title>
     
     <!-- 唯一的一个外部链接，只用于生成图片功能，使用国内最快的字节跳动源 -->
     <script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* --- 1. 样式定义区 (手写原生 CSS 还原 Tailwind 风格) --- */
+        /* --- 1. 样式定义区 --- */
         :root {
-            --pink-50: #fdf2f8;
-            --pink-100: #fce7f3;
-            --pink-500: #ec4899;
-            --pink-600: #db2777;
-            --red-50: #fef2f2;
-            --red-500: #ef4444;
-            --purple-500: #a855f7;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
+            --primary: #ec4899;
+            --primary-light: #fce7f3;
+            --bg-color: #fdf4ff; /* 更温暖的淡粉紫背景 */
+            --card-bg: #ffffff;
+            --text-main: #374151;
+            --text-sub: #6b7280;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--pink-50);
-            color: var(--gray-800);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0; padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* 顶部彩条 */
-        .top-bar { height: 8px; background: linear-gradient(to right, #f472b6, #f87171, #a855f7); flex-shrink: 0; }
+        /* 顶部进度条容器 */
+        .top-bar { height: 6px; background: #e5e7eb; width: 100%; position: fixed; top: 0; left: 0; z-index: 50; }
+        .top-bar-fill { height: 100%; background: linear-gradient(90deg, #f472b6, #a855f7); width: 0%; transition: width 0.3s; }
 
         /* 通用容器 */
         .container {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 24px 20px;
             max-width: 480px;
             margin: 0 auto;
             width: 100%;
-            display: none; /* 默认隐藏，JS控制显示 */
+            display: none; 
             animation: fadeIn 0.4s ease-out;
+            padding-top: 30px; /* 避开顶部条 */
         }
         
         .container.active { display: flex; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-        /* 首页样式 */
-        .intro-content { text-align: center; justify-content: center; height: 90vh; }
-        .icon-circle { background: var(--pink-100); padding: 20px; border-radius: 50%; display: inline-block; margin-bottom: 20px; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        /* --- 首页样式 --- */
+        .intro-content { text-align: center; justify-content: center; min-height: 90vh; }
         
-        .title { font-size: 28px; font-weight: bold; margin-bottom: 8px; line-height: 1.3; }
-        .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 30px; }
+        /* 修复图标比例问题：使用固定宽高和 flex 居中 */
+        .icon-circle { 
+            width: 80px; 
+            height: 80px; 
+            background: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin: 0 auto 24px auto; 
+            animation: bounce 2s infinite; 
+            box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.3);
+            flex-shrink: 0; /* 防止被挤压 */
+        }
         
-        .card { background: var(--gray-50); padding: 20px; border-radius: 12px; text-align: left; font-size: 14px; color: #4b5563; margin-bottom: 30px; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05); }
-        .card ul { padding-left: 20px; margin: 10px 0 0 0; }
+        .title { font-size: 32px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; color: #111827; letter-spacing: -0.5px; }
+        .subtitle { color: var(--text-sub); font-size: 15px; margin-bottom: 40px; }
         
-        /* 按钮通用样式 */
+        .card { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 20px; 
+            text-align: left; 
+            font-size: 15px; 
+            line-height: 1.6;
+            color: var(--text-main); 
+            margin-bottom: 30px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .card ul { padding-left: 18px; margin: 10px 0 0 0; color: var(--text-sub); }
+        .card li { margin-bottom: 6px; }
+
+        /* --- 按钮样式 --- */
         .btn {
             width: 100%;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 18px;
+            border-radius: 16px;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             color: white;
-            background: linear-gradient(to right, #ec4899, #ef4444);
+            background: linear-gradient(135deg, #ec4899, #be185d);
             border: none;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px -5px rgba(236, 72, 153, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
-        .btn:active { transform: scale(0.96); }
-        .btn-restart { background: var(--gray-100); color: #4b5563; margin-right: 10px; }
+        .btn::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.2), transparent);
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .btn:active { transform: scale(0.98); box-shadow: 0 4px 10px -2px rgba(236, 72, 153, 0.4); }
+        .btn:active::after { opacity: 1; }
+        .btn-restart { background: white; color: var(--text-main); border: 1px solid #e5e7eb; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-right: 12px; }
         
-        /* 答题页样式 */
-        .progress-bar-bg { height: 8px; background: var(--gray-100); border-radius: 99px; overflow: hidden; margin-bottom: 30px; }
-        .progress-bar-fill { height: 100%; background: var(--pink-500); width: 0%; transition: width 0.3s; }
-        .q-tag { background: var(--pink-100); color: var(--pink-600); font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 99px; display: inline-block; margin-bottom: 15px; }
-        .q-text { font-size: 20px; font-weight: 500; line-height: 1.6; margin-bottom: 40px; min-height: 80px; }
+        /* --- 答题页样式 --- */
+        .progress-text { font-size: 13px; font-weight: 600; color: #9ca3af; margin-bottom: 40px; text-align: center; letter-spacing: 1px; }
+        
+        .q-card {
+            background: white; border-radius: 24px; padding: 30px 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+            text-align: center; margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .q-tag { 
+            background: #fdf2f8; color: #db2777; 
+            font-size: 13px; font-weight: 800; 
+            padding: 6px 14px; border-radius: 12px; 
+            display: inline-block; margin-bottom: 20px; 
+        }
+        .q-text { font-size: 20px; font-weight: 700; line-height: 1.5; color: #1f2937; min-height: 60px; display: flex; align-items: center; justify-content: center; }
         
         .option-btn {
-            width: 100%; padding: 16px 20px; margin-bottom: 12px;
-            background: white; border: 2px solid transparent; border-radius: 12px;
-            text-align: left; font-size: 16px; font-weight: 500;
+            width: 100%; padding: 18px 24px; margin-bottom: 12px;
+            background: rgba(255,255,255,0.6); 
+            border: 2px solid white; 
+            border-radius: 16px;
+            text-align: left; font-size: 16px; font-weight: 600; color: #4b5563;
             display: flex; justify-content: space-between; align-items: center;
             transition: all 0.2s; cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
-        .option-btn:active { transform: scale(0.98); }
-        /* 选项特定颜色 */
-        .opt-5 { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-        .opt-4 { background: #fdf2f8; color: #be185d; border-color: #fbcfe8; }
-        .opt-3 { background: #f9fafb; color: #374151; border-color: #e5e7eb; }
-        .opt-2 { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-        .opt-1 { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .option-btn:active { transform: scale(0.98); background: white; border-color: var(--primary); color: var(--primary); }
 
-        /* 结果页样式 */
-        .result-header {
-            background: var(--gray-900); color: white; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
-            padding: 40px 30px 60px 30px; text-align: center; margin: -20px -20px 20px -20px; position: relative; overflow: hidden;
+        /* --- 结果页样式 (重设计) --- */
+        .result-container {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: 20px;
         }
-        .score-num { font-size: 72px; font-weight: bold; background: linear-gradient(to right, #f9a8d4, #d8b4fe); -webkit-background-clip: text; color: transparent; margin: 10px 0; }
-        .level-badge { display: inline-block; padding: 4px 16px; border-radius: 99px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-size: 14px; }
+
+        /* 头部设计 */
+        .res-header {
+            background: linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%);
+            padding: 40px 20px 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+        /* 装饰背景圆 */
+        .deco-circle { position: absolute; border-radius: 50%; filter: blur(40px); opacity: 0.6; }
+        .dc-1 { width: 100px; height: 100px; background: #f9a8d4; top: -20px; right: -20px; }
+        .dc-2 { width: 80px; height: 80px; background: #c4b5fd; bottom: 10px; left: -20px; }
+
+        .res-score-box { position: relative; z-index: 10; }
+        .res-subtitle { font-size: 13px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .res-score { 
+            font-size: 80px; 
+            font-weight: 900; 
+            line-height: 1;
+            background: linear-gradient(to right, #db2777, #9333ea); 
+            -webkit-background-clip: text; 
+            color: transparent; 
+            margin-bottom: 10px;
+        }
+        .res-level-pill {
+            display: inline-block;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.15);
+            color: #374151; /* 默认色，会JS覆盖 */
+        }
+
+        /* 内容区设计 */
+        .res-body { padding: 30px 24px 40px 24px; }
+
+        .info-section { margin-bottom: 30px; }
+        .info-title { 
+            font-size: 15px; font-weight: 700; color: #111827; 
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px; 
+        }
+        .info-icon { 
+            width: 24px; height: 24px; border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 14px;
+        }
         
-        .analysis-card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); animation: slideUp 0.5s ease-out; }
-        .card-title { display: flex; align-items: center; gap: 10px; font-weight: bold; margin-bottom: 12px; color: var(--gray-800); }
-        .icon-box { padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .card-text { font-size: 14px; color: #4b5563; line-height: 1.6; text-align: justify; }
+        .info-main-text { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+        .info-desc { font-size: 14px; color: #4b5563; line-height: 1.7; text-align: justify; }
 
-        /* 底部操作栏 */
-        .bottom-bar {
+        .advice-box {
+            background: #f0fdf4; border-radius: 16px; padding: 20px;
+            border: 1px solid #dcfce7;
+        }
+        .advice-quote { 
+            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #bbf7d0; 
+            font-size: 12px; color: #15803d; font-style: italic; text-align: center; 
+        }
+
+        .watermark { text-align: center; color: #d1d5db; font-size: 11px; font-weight: 500; letter-spacing: 0.5px; margin-top: 20px; }
+
+        /* 底部浮动栏 */
+        .bottom-action-bar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-            padding: 15px 20px 30px 20px; display: flex; z-index: 100;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);
+            padding: 16px 20px 30px 20px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex; z-index: 100;
         }
-        
-        .footer-watermark { text-align: center; font-size: 10px; color: #9ca3af; padding: 20px 0; width: 100%; }
 
-        /* 图片预览弹窗 */
+        /* 图片弹窗 */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 200;
-            display: flex; justify-content: center; align-items: center; padding: 20px;
-            display: none; opacity: 0; transition: opacity 0.3s;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            display: none; justify-content: center; align-items: center; padding: 20px;
+            opacity: 0; transition: opacity 0.3s;
         }
         .modal.show { display: flex; opacity: 1; }
-        .modal-content { background: white; padding: 10px; border-radius: 16px; max-width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
-        .close-btn { position: absolute; top: 10px; right: 10px; background: #f3f4f6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
+        .modal-content { background: transparent; max-width: 100%; max-height: 90vh; overflow-y: auto; text-align: center; }
+        .close-btn { 
+            position: absolute; top: 20px; right: 20px; 
+            width: 40px; height: 40px; background: rgba(255,255,255,0.2); 
+            border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; 
+            font-size: 20px; cursor: pointer; backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-bar"></div>
+    <div class="top-bar"><div id="top-progress" class="top-bar-fill"></div></div>
 
     <!-- 1. 首页 -->
     <div id="page-intro" class="container active intro-content">
         <div class="icon-circle">
-            <svg width="40" height="40" viewBox="0 0 256 256" fill="#ef4444"><path d="M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,228.66,16,172,16,102A62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z"></path></svg>
+            <svg width="40" height="40" viewBox="0 0 256 256" fill="#ec4899"><path d="M236.46,173.1,208.27,118A32,32,0,1,0,152,112a32.09,32.09,0,0,0,1.52,9.6L128,144.4l-25.52-22.8A32.09,32.09,0,0,0,104,112a32,32,0,1,0-56.27,6L19.54,173.1A16,16,0,0,0,33.81,198H222.19A16,16,0,0,0,236.46,173.1ZM72,96a16,16,0,1,1-16,16A16,16,0,0,1,72,96ZM34.62,182l25-48.88a31.9,31.9,0,0,0,24.78,0l25,48.88Zm186.76,0-25-48.88a31.9,31.9,0,0,0,24.78,0l25,48.88ZM184,128a16,16,0,1,1,16-16A16,16,0,0,1,184,128Z"></path></svg>
         </div>
-        <div class="title">恋爱占有欲<br>深度测试</div>
-        <div class="subtitle">基于依恋心理学 • 50道精选测试题</div>
+        <div class="title">友情占有欲<br>深度测试</div>
+        <div class="subtitle">基于人际依恋心理学 • 50道精选测试题</div>
         
         <div class="card">
-            <p>💡 <strong>测试说明：</strong></p>
+            <p style="font-weight:700; margin-bottom:10px; font-size:16px;">💡 测试说明：</p>
             <ul>
-                <li>本测试共50题，约需3-5分钟。</li>
-                <li>请根据你的<strong>第一直觉</strong>回答。</li>
-                <li>没有对错之分，诚实面对自己。</li>
+                <li>请联想一位你<strong>“最好的朋友”</strong></li>
+                <li>共50题，约需3-5分钟</li>
+                <li>请凭第一直觉回答</li>
             </ul>
         </div>
 
         <button class="btn" onclick="startTest()">
             开始测试 
-            <svg width="20" height="20" viewBox="0 0 256 256" fill="white"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg>
+            <svg width="20" height="20" viewBox="0 0 256 256" fill="white"><path d="M181.66,133.66l-80,80A8,8,0,0,1,88,208V48a8,8,0,0,1,13.66-5.66l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
         </button>
-        <div class="footer-watermark">小红书-心灵栖息树原创 侵权必究</div>
+        <div class="watermark" style="color:#9ca3af; margin-top:30px;">小红书-心灵栖息树原创 侵权必究</div>
     </div>
 
     <!-- 2. 答题页 -->
-    <div id="page-playing" class="container">
-        <div style="display:flex; justify-content:space-between; font-size:12px; color:#9ca3af; margin-bottom:5px;">
-            <span>进度</span>
-            <span id="progress-text">1 / 50</span>
-        </div>
-        <div class="progress-bar-bg">
-            <div id="progress-fill" class="progress-bar-fill"></div>
+    <div id="page-playing" class="container" style="justify-content: center;">
+        <div class="progress-text"><span id="curr-q">1</span> / 50</div>
+
+        <div class="q-card">
+            <span class="q-tag" id="q-number">Q1</span>
+            <div class="q-text" id="q-content">题目加载中...</div>
         </div>
 
-        <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center;">
-            <div>
-                <span class="q-tag" id="q-number">Q1</span>
-                <div class="q-text" id="q-content">题目加载中...</div>
-            </div>
-        </div>
-
-        <div id="options-container">
+        <div id="options-container" style="width: 100%;">
             <!-- 选项由JS生成 -->
         </div>
-        <div class="footer-watermark">小红书-心灵栖息树原创 侵权必究</div>
     </div>
 
-    <!-- 3. 结果页 -->
-    <div id="page-result" class="container" style="padding: 20px 20px 100px 20px;">
-        <div id="capture-area" style="background: white; padding-bottom: 20px;"> <!-- 这个区域会被截图 -->
-            <div class="result-header">
-                <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:#ec4899; opacity:0.2; filter:blur(40px); border-radius:50%;"></div>
-                <div style="position:absolute; bottom:-20px; left:-20px; width:100px; height:100px; background:#a855f7; opacity:0.2; filter:blur(40px); border-radius:50%;"></div>
+    <!-- 3. 结果页 (UI重做) -->
+    <div id="page-result" class="container" style="padding-bottom: 120px;">
+        <!-- 截图区域开始 -->
+        <div id="capture-area" class="result-container">
+            <!-- 头部 -->
+            <div class="res-header">
+                <div class="deco-circle dc-1"></div>
+                <div class="deco-circle dc-2"></div>
                 
-                <div style="color:#9ca3af; font-size:12px; letter-spacing:1px; margin-bottom:5px;">您的占有欲指数</div>
-                <div class="score-num" id="res-score">0</div>
-                <div class="level-badge" id="res-level">分析中...</div>
+                <div class="res-score-box">
+                    <div class="res-subtitle">您的友情占有欲指数</div>
+                    <div class="res-score" id="res-score">0</div>
+                    <div class="res-level-pill" id="res-level">分析中...</div>
+                </div>
             </div>
 
-            <div style="padding: 0 10px; margin-top: -30px; position: relative; z-index: 10;">
+            <!-- 内容 -->
+            <div class="res-body">
                 <!-- 依恋类型 -->
-                <div class="analysis-card">
-                    <div class="card-title">
-                        <div class="icon-box" style="background:#dbeafe;"><svg width="20" height="20" fill="#2563eb" viewBox="0 0 256 256"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Zm32-84H96V56a32,32,0,0,1,64,0Z"></path></svg></div>
-                        依恋人格分析
+                <div class="info-section">
+                    <div class="info-title">
+                        <div class="info-icon" style="background:#dbeafe; color:#2563eb;">✦</div>
+                        友情观画像
                     </div>
-                    <div style="font-weight:bold; margin-bottom:5px;" id="res-attachment"></div>
-                    <div class="card-text" id="res-desc"></div>
+                    <div class="info-main-text" id="res-attachment"></div>
+                    <div class="info-desc" id="res-desc"></div>
                 </div>
 
-                <!-- 行为画像 -->
-                <div class="analysis-card" style="animation-delay: 0.1s">
-                    <div class="card-title">
-                        <div class="icon-box" style="background:#f3e8ff;"><svg width="20" height="20" fill="#9333ea" viewBox="0 0 256 256"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.67,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM128,144a56,56,0,1,1,56-56A56.06,56.06,0,0,1,128,144Z"></path></svg></div>
-                        潜在行为画像
+                <div style="width:100%; height:1px; background:#f3f4f6; margin: 25px 0;"></div>
+
+                <!-- 行为特征 -->
+                <div class="info-section">
+                    <div class="info-title">
+                        <div class="info-icon" style="background:#f3e8ff; color:#9333ea;">★</div>
+                        相处模式特征
                     </div>
-                    <div class="card-text" id="res-behavior"></div>
+                    <div class="info-desc" id="res-behavior"></div>
                 </div>
 
-                 <!-- 恋爱导航 -->
-                 <div class="analysis-card" style="animation-delay: 0.2s">
-                    <div class="card-title">
-                        <div class="icon-box" style="background:#ffedd5;"><svg width="20" height="20" fill="#ea580c" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"></path></svg></div>
-                        恋爱导航
+                <!-- 避坑指南 -->
+                <div class="info-section">
+                    <div class="info-title">
+                        <div class="info-icon" style="background:#ffedd5; color:#ea580c;">⚠️</div>
+                        友情避坑指南
                     </div>
-                    <div class="card-text">
-                        <p style="margin-bottom:5px;"><strong>❤️ 适合伴侣：</strong><span id="res-partner"></span></p>
-                        <p><strong>⚠️ 雷区预警：</strong><span id="res-blind"></span></p>
+                    <div class="info-desc" style="background:#fff7ed; padding:15px; border-radius:12px; border-left:4px solid #fdba74;">
+                        <div style="margin-bottom:8px;"><strong>🤝 适合的朋友：</strong><span id="res-partner"></span></div>
+                        <div><strong>💣 心理雷区：</strong><span id="res-blind"></span></div>
                     </div>
                 </div>
 
                 <!-- 建议 -->
-                <div class="analysis-card" style="background:linear-gradient(to bottom right, #f9fafb, #fdf2f8); animation-delay: 0.3s">
-                    <div class="card-title">
-                        <div class="icon-box" style="background:#dcfce7;"><svg width="20" height="20" fill="#16a34a" viewBox="0 0 256 256"><path d="M222.14,33.86a8,8,0,0,0-8.49-1.89c-43.76,14.6-67,49-74.67,69.56C131.62,99.82,123.82,96,112,96A56,56,0,0,0,56,152c0,23,19.39,49.25,48.8,69.57a8,8,0,0,0,11.06-1.72L162.57,163l.71-.35c18.51-9.52,43-34.56,59.39-84.34A8,8,0,0,0,222.14,33.86ZM104.8,205.2C85.54,191.13,72,172.6,72,152a40,40,0,0,1,40-40c26.79,0,38.31,23.41,41.49,32.35l-44,48.8A8,8,0,0,0,104.8,205.2Zm66-57.08-16.12,17.91C145.45,142.14,136.65,128,118.82,128h-1.05c7-17.16,26.43-45,61.73-57.85C167.31,107,152.09,129.56,170.83,148.12Z"></path></svg></div>
-                        舒适关系建议
+                <div class="advice-box">
+                    <div class="info-title" style="margin-bottom:8px;">
+                        <div class="info-icon" style="background:#dcfce7; color:#16a34a;">♥</div>
+                        建议
                     </div>
-                    <div class="card-text" id="res-advice"></div>
-                    <div style="height:1px; background:#fce7f3; margin:10px 0;"></div>
-                    <div style="font-size:12px; color:#9ca3af; font-style:italic; text-align:center;">“健康的爱不是捆绑，而是两个自由灵魂的同行。”</div>
+                    <div class="info-desc" id="res-advice" style="color:#374151;"></div>
+                    <div class="advice-quote">“真正的友谊是：即使不常联系，见面时依然如故。”</div>
                 </div>
 
-                <div class="footer-watermark">小红书-心灵栖息树原创 侵权必究</div>
+                <div class="watermark">小红书-心灵栖息树 原创</div>
             </div>
         </div>
+        <!-- 截图区域结束 -->
     </div>
 
-    <!-- 底部按钮 (固定悬浮) -->
-    <div id="bottom-bar" class="bottom-bar" style="display:none;">
-        <button class="btn btn-restart" onclick="restartTest()">
-            重新测试
-        </button>
+    <!-- 底部操作栏 -->
+    <div id="bottom-bar" class="bottom-action-bar" style="display:none;">
+        <button class="btn btn-restart" onclick="restartTest()">重测</button>
         <button class="btn" id="save-btn" onclick="saveReport()">
-            <span id="save-text">保存报告</span>
+            保存报告卡片
+            <svg width="20" height="20" viewBox="0 0 256 256" fill="white"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm-4,160H44V56H212ZM160,88a12,12,0,1,1-12,12A12,12,0,0,1,160,88Z"></path></svg>
         </button>
     </div>
 
     <!-- 图片弹窗 -->
     <div id="img-modal" class="modal" onclick="closeModal()">
+        <div class="close-btn" onclick="closeModal()">✕</div>
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="close-btn" onclick="closeModal()">✕</div>
-            <img id="generated-img" style="width:100%; border-radius:12px; display:block;" src="" />
-            <div style="text-align:center; padding-top:10px;">
-                <div style="font-weight:bold; font-size:14px;">✅ 长按图片保存到相册</div>
-                <div style="font-size:12px; color:#9ca3af;">即可分享到朋友圈或小红书</div>
-            </div>
+            <img id="generated-img" style="width:100%; border-radius:12px; display:block; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" src="" />
+            <div style="margin-top:15px; color:white; font-size:14px; font-weight:bold;">长按图片保存到相册 ✅</div>
         </div>
     </div>
 
     <script>
-        // --- 逻辑定义区 (原生 JS) ---
+        // --- 逻辑定义区 ---
         
         const questions = [
-            "如果你伴侣的手机响了，你会有一种强烈的冲动想去看是谁发的消息。",
-            "你不喜欢伴侣有异性知己，即使他们认识的时间比你还长。",
-            "如果伴侣没有秒回你的消息，你会开始胡思乱想。",
-            "你希望知道伴侣每一分钟的行踪。",
-            "你经常翻看伴侣的社交媒体动态，查看点赞和评论的人是谁。",
-            "你认为恋爱中的人应该没有任何秘密。",
-            "如果伴侣想独自去旅行，你会感到非常不安或生气。",
-            "你常常担心伴侣会遇到比你更好的人而离开你。",
-            "你不喜欢伴侣夸赞其他的异性。",
-            "你希望伴侣把所有的空闲时间都花在你身上。",
-            "如果伴侣因为工作忙碌忽略了你，你会觉得他不爱你了。",
-            "你曾经偷偷查看过伴侣的手机或聊天记录。",
-            "你很难接受伴侣有你不知道的过去。",
-            "当伴侣和朋友聚会时，你会要求他/她随时拍照报备。",
-            "你认为伴侣穿什么衣服出门应该经过你的同意。",
-            "你经常询问伴侣“你爱不爱我”来获得确认。",
-            "如果伴侣对你的态度稍微冷淡一点，你就会陷入焦虑。",
-            "你不喜欢伴侣在没有你的情况下玩得很开心。",
-            "你觉得伴侣的社交圈子太广是一种威胁。",
-            "你希望成为伴侣生命中唯一重要的人，甚至超过亲人。",
-            "看到伴侣和别人聊得很投机，你会感到心里不舒服。",
-            "你会因为伴侣回复别人的消息比回复你的长而吃醋。",
-            "你倾向于帮伴侣做决定，因为你觉得这样对他/她好。",
-            "如果伴侣更改了手机密码，你会觉得他在隐瞒什么。",
-            "你不喜欢伴侣提及前任的任何事情，即使是客观评价。",
-            "你认为“报备”是恋爱中最基本的义务，必须事无巨细。",
-            "你有时会故意让伴侣嫉妒，以测试他对你的在乎程度。",
-            "你很难信任伴侣身边的单身异性同事。",
-            "如果伴侣想拥有独处的空间，你会觉得这是一种疏远。",
-            "你会限制伴侣的某些爱好，因为那会占用你们相处的时间。",
-            "你经常拿自己和伴侣身边的人做比较。",
-            "你认为伴侣应该无条件站在你这边，即使你是错的。",
-            "如果伴侣不把合照发朋友圈，你会非常介意。",
-            "你很难忍受伴侣有任何事情瞒着你。",
-            "你会在脑海中预演伴侣背叛你的场景，并因此感到难过。",
-            "你觉得为了爱情，牺牲一部分个人自由是理所应当的。",
-            "你曾要求伴侣删除某些你不喜欢的联系人。",
-            "你对伴侣的行踪了解得越详细，你就越有安全感。",
-            "你认为两个人在一起就应该共享账号密码。",
-            "你会因为伴侣没有注意到你的新发型或衣服而生气。",
-            "你觉得伴侣如果不回复消息，就不应该发朋友圈。",
-            "你很难接受伴侣在吵架后选择回避或冷战。",
-            "你会通过伴侣的消费记录来推断他的行踪。",
-            "你认为伴侣不仅要是恋人，还要是你最好的朋友和心理咨询师。",
-            "如果伴侣称赞路人好看，你会立刻感到不悦。",
-            "你经常担心这段关系会突然结束。",
-            "你觉得你的情绪完全取决于伴侣对你的态度。",
-            "你会因为伴侣没有在节日送出符合预期的礼物而质疑感情。",
-            "你希望伴侣的未来规划里全部都是关于你的。",
-            "为了留住对方，你愿意做任何改变，甚至失去自我。"
+            "如果你的好朋友和别人出去玩没叫你，你会感到失落。",
+            "你希望成为对方心里“唯一”最好的朋友。",
+            "如果好朋友有了新朋友，你会担心自己被取代。",
+            "你不喜欢好朋友在你面前频繁夸赞另一个人。",
+            "你希望好朋友的秘密只告诉你一个人。",
+            "如果好朋友回复别人的消息比回你快，你会吃醋。",
+            "你认为好朋友之间不应该有任何秘密。",
+            "看到好朋友和别人用同款头像或网名，你会心里不舒服。",
+            "你常常翻看好朋友的社交动态，看谁给TA点赞留言。",
+            "如果好朋友想独自旅行或做某事，你会觉得被排斥。",
+            "你希望好朋友的大部分空闲时间都留给你。",
+            "如果好朋友因为忙碌忽略了你，你会觉得TA不重视这段友谊。",
+            "你很难接受好朋友有你不知道的过去或朋友圈。",
+            "当好朋友和其他人聊天很开心时，你会想打断或加入。",
+            "你认为“报备行踪”是好朋友之间默契的一部分。",
+            "你经常问好朋友“我和XXX谁更重要”这类问题。",
+            "如果好朋友对你的态度稍微冷淡，你会陷入自我怀疑。",
+            "你不喜欢好朋友在没有你的情况下玩得太嗨。",
+            "你觉得好朋友的社交圈太广是一种威胁。",
+            "你希望在好朋友的婚礼上，伴郎/伴娘只能是你。",
+            "你会因为好朋友没注意到你的新变化而生气。",
+            "你倾向于帮好朋友做决定，觉得是为TA好。",
+            "如果好朋友换了新环境（如新学校/工作），你会极度焦虑TA变心。",
+            "你不喜欢好朋友提及TA以前的朋友。",
+            "你有时会故意冷落好朋友，看TA会不会来哄你。",
+            "你很难信任好朋友身边的新面孔。",
+            "如果好朋友想拥有独处空间，你会觉得这是关系的疏远。",
+            "你会限制好朋友和你不喜欢的人来往。",
+            "你经常拿自己和好朋友身边的其他人做比较。",
+            "你认为好朋友应该无条件站在你这边，即使你做错了。",
+            "如果好朋友不发你们的合照在朋友圈，你会介意。",
+            "你很难忍受好朋友有事情瞒着你。",
+            "你会脑补好朋友背叛你或抛弃你的场景。",
+            "你觉得为了友谊，牺牲一部分个人自由是应该的。",
+            "你曾暗示好朋友疏远某些人。",
+            "你对好朋友的生活细节了解得越清楚，越有安全感。",
+            "你认为最好的朋友之间应该共享很多账号密码。",
+            "你会通过好朋友的社交软件在线状态来推测TA在干嘛。",
+            "你很难接受好朋友在吵架后选择冷战或回避。",
+            "你觉得你的情绪很大程度上取决于好朋友对你的态度。",
+            "如果好朋友没送你生日礼物或礼物不合心意，你会质疑友谊。",
+            "你希望好朋友的未来规划里一定要有你。",
+            "为了留住这个朋友，你愿意一味迁就。",
+            "你无法忍受好朋友和你的死对头说话。",
+            "当好朋友向你吐槽别人时，你会暗自高兴，觉得你们更亲密了。",
+            "你希望好朋友的第一求助对象永远是你。",
+            "如果好朋友和别人有了只属于他们的梗，你会很难过。",
+            "你经常确认自己在对方心中的排名。",
+            "你觉得真正的友谊就是占有。",
+            "如果这段友谊结束，你会觉得世界崩塌了。"
         ];
 
         let currentIdx = 0;
         let totalScore = 0;
         
-        // 选项配置
         const options = [
-            { t: "非常符合", s: 5, c: "opt-5" },
-            { t: "比较符合", s: 4, c: "opt-4" },
-            { t: "一般 / 不确定", s: 3, c: "opt-3" },
-            { t: "比较不符合", s: 2, c: "opt-2" },
-            { t: "完全不符合", s: 1, c: "opt-1" }
+            { t: "非常符合", s: 5 },
+            { t: "比较符合", s: 4 },
+            { t: "一般 / 不确定", s: 3 },
+            { t: "比较不符合", s: 2 },
+            { t: "完全不符合", s: 1 }
         ];
 
-        // 页面切换
         function showPage(pageId) {
             document.querySelectorAll('.container').forEach(el => {
                 el.classList.remove('active');
             });
             document.getElementById(pageId).classList.add('active');
             
-            // 底部栏控制
+            const bottomBar = document.getElementById('bottom-bar');
+            const topBar = document.querySelector('.top-bar');
+            
             if(pageId === 'page-result') {
-                document.getElementById('bottom-bar').style.display = 'flex';
+                bottomBar.style.display = 'flex';
+                topBar.style.display = 'none';
             } else {
-                document.getElementById('bottom-bar').style.display = 'none';
+                bottomBar.style.display = 'none';
+                topBar.style.display = 'block';
             }
             window.scrollTo(0,0);
         }
@@ -370,8 +466,10 @@
         }
 
         function renderQuestion() {
-            document.getElementById('progress-text').innerText = (currentIdx + 1) + " / " + questions.length;
-            document.getElementById('progress-fill').style.width = ((currentIdx + 1) / questions.length * 100) + "%";
+            // Update Top Progress Bar
+            document.getElementById('top-progress').style.width = ((currentIdx + 1) / questions.length * 100) + "%";
+            
+            document.getElementById('curr-q').innerText = currentIdx + 1;
             document.getElementById('q-number').innerText = "Q" + (currentIdx + 1);
             document.getElementById('q-content').innerText = questions[currentIdx];
 
@@ -380,8 +478,8 @@
             
             options.forEach(opt => {
                 const btn = document.createElement('div');
-                btn.className = 'option-btn ' + opt.c;
-                btn.innerHTML = `<span>${opt.t}</span><span style="width:16px;height:16px;border:1px solid currentColor;border-radius:50%;opacity:0.3"></span>`;
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${opt.t}</span><span style="width:18px;height:18px;border:2px solid #e5e7eb;border-radius:50%;"></span>`;
                 btn.onclick = () => handleAnswer(opt.s);
                 optsDiv.appendChild(btn);
             });
@@ -391,13 +489,12 @@
             totalScore += score;
             if (currentIdx < questions.length - 1) {
                 currentIdx++;
-                // 简单的淡出淡入效果
                 const content = document.getElementById('q-content');
                 content.style.opacity = 0;
                 setTimeout(() => {
                     renderQuestion();
                     content.style.opacity = 1;
-                }, 200);
+                }, 150);
             } else {
                 calculateAndShowResult();
             }
@@ -408,10 +505,10 @@
             const res = analyze(finalScore);
             
             document.getElementById('res-score').innerText = finalScore;
-            document.getElementById('res-level').innerText = res.level;
-            // 处理颜色
-            document.getElementById('res-level').style.background = res.bg;
-            document.getElementById('res-level').style.color = res.fg;
+            
+            const levelPill = document.getElementById('res-level');
+            levelPill.innerText = res.level;
+            levelPill.style.color = res.fg;
             
             document.getElementById('res-attachment').innerText = res.attachment;
             document.getElementById('res-desc').innerText = res.description;
@@ -426,43 +523,43 @@
         function analyze(score) {
             if (score <= 25) {
                 return {
-                    level: "佛系/疏离型", bg: "#dcfce7", fg: "#15803d",
-                    attachment: "回避型依恋 (Avoidant)",
-                    description: "你的占有欲非常低，甚至可能显得有些疏离。你非常看重个人空间和独立性，不仅给自己，也给伴侣极大的自由。",
-                    behavior: "几乎从不查岗，也不介意伴侣有异性朋友。当伴侣表现出强烈的依赖时，可能会下意识地想逃离。",
-                    partner_suggestion: "独立、有自己生活重心的伴侣（如安全型）。",
-                    blind_spot: "容易因边界感过强被误解为“冷暴力”或“不爱了”。",
-                    advice: "适度的占有欲是“在乎”的表现，尝试多向伴侣表达情感需求。"
+                    level: "佛系/独立型", fg: "#15803d",
+                    attachment: "安全独立型 (Independent)",
+                    description: "你对友谊的占有欲极低，甚至让人觉得有点“君子之交淡如水”。你非常尊重朋友的独立空间，认为每个人都是自由的个体。你不介意朋友有其他圈子，甚至乐于见到他们拓展社交。",
+                    behavior: "朋友长时间不联系你也不会焦虑，相信“只要心里有，无需天天黏”。从不查岗，不吃醋，对朋友的新伙伴持欢迎态度。",
+                    partner_suggestion: "同样独立、有主见的朋友。",
+                    blind_spot: "容易因为过于疏离，让敏感的朋友觉得你“不在乎”。",
+                    advice: "适度表达你的在乎。偶尔的主动邀约和情感流露，会让朋友感到温暖。"
                 };
             } else if (score <= 50) {
                 return {
-                    level: "安全/平衡型", bg: "#dbeafe", fg: "#1d4ed8",
-                    attachment: "安全型依恋 (Secure)",
-                    description: "你的占有欲处于非常健康的水平。你信任伴侣，也自信于这段关系，懂得在亲密和独立之间找到平衡。",
-                    behavior: "偶尔吃醋是情趣而非控制。不需要通过查手机获得安全感，伴侣失联时也能安稳做自己的事。",
-                    partner_suggestion: "你是万能适配者，但找同样的安全型伴侣会让生活最轻松。",
-                    blind_spot: "可能因过于理智而忽略伴侣当下的情绪波动。",
-                    advice: "保持现状，继续用包容和信任滋养关系。"
+                    level: "健康/平衡型", fg: "#1d4ed8",
+                    attachment: "安全依恋型 (Secure)",
+                    description: "你的友情观非常健康成熟。你既能享受和朋友亲密无间的时光，也能接受彼此拥有独立的生活。你信任朋友，不会因为他们有了新朋友就患得患失。",
+                    behavior: "偶尔会吃点小醋，但这更多是友谊的调味剂。你会为朋友的开心而开心，即使那份开心不是你带来的。你是朋友圈里的定海神针。",
+                    partner_suggestion: "你是万能型朋友。无论是黏人的还是高冷的，都能和你相处得很舒服。",
+                    blind_spot: "有时候可能过于理性，难以共情那些极度缺乏安全感的朋友的情绪爆发。",
+                    advice: "保持这种状态！你是非常理想的挚友，继续用你的包容和信任去滋养身边的关系。"
                 };
             } else if (score <= 75) {
                 return {
-                    level: "焦虑/依恋型", bg: "#fef9c3", fg: "#b45309",
-                    attachment: "焦虑型依恋 (Anxious)",
-                    description: "你有较强的占有欲，源于对关系的重视和不安全感。容易胡思乱想，需要伴侣频繁的确认。",
-                    behavior: "对回复速度、语气非常敏感。吵架时倾向于追着把话说清楚，无法忍受冷处理。",
-                    partner_suggestion: "情绪稳定、事事有回应的伴侣。避免回避型。",
-                    blind_spot: "容易混淆“爱”和“融合”，试图消灭界限来获得安全感。",
-                    advice: "建立“自我安全感”，减少对伴侣的情绪依赖。"
+                    level: "焦虑/黏人型", fg: "#b45309",
+                    attachment: "焦虑依恋型 (Anxious)",
+                    description: "你对好朋友有较强的依赖和占有欲。你非常看重友谊，害怕被冷落或被取代。你渴望成为对方心中“最特别”的那一个，一旦感觉地位动摇，就会非常不安。",
+                    behavior: "对朋友的回复速度敏感，喜欢“连体婴”式的相处。如果朋友和别人玩得好，你会偷偷难过或赌气。你付出的感情很浓烈，但有时会让朋友感到压力。",
+                    partner_suggestion: "情绪稳定、事事有回应、能给你足够安全感的朋友。",
+                    blind_spot: "容易把友谊变成“排他性”的二人世界，反而限制了彼此的成长。",
+                    advice: "建立“自我安全感”。记住，朋友有其他朋友，并不代表你不重要。"
                 };
             } else {
                 return {
-                    level: "极致/掌控型", bg: "#fee2e2", fg: "#b91c1c",
-                    attachment: "恐惧/痴迷型 (Disorganized)",
-                    description: "占有欲非常强，可能已影响关系健康。渴望完全掌控伴侣的行踪，任何风吹草动都会引发警觉。",
-                    behavior: "可能限制伴侣社交，要求秒回，很难信任对方。爱像是一场必须赢的战争。",
-                    partner_suggestion: "包容性极强且边界感清晰成熟的伴侣。",
-                    blind_spot: "高压控制极易导致关系破裂，爱变成了枷锁。",
-                    advice: "尝试“课题分离”，意识到伴侣是独立个体。必要时寻求心理咨询。"
+                    level: "极致/霸道型", fg: "#b91c1c",
+                    attachment: "强占有型 (Possessive)",
+                    description: "你对友谊有着极强的排他性和控制欲。你希望完全占据好朋友的时间和注意力，视对方为私有财产。任何“第三者”的介入都会引发你的强烈警觉和敌意。",
+                    behavior: "要求朋友秒回，限制朋友的社交圈，甚至希望朋友和你不喜欢的人断交。你的友谊伴随着强烈的嫉妒心和控制欲，容易演变成“要么听我的，要么绝交”。",
+                    partner_suggestion: "包容性极强、性格温和但有原则的朋友。",
+                    blind_spot: "过度的控制会让朋友感到窒息而想要逃离，最终导致你最害怕的“失去”成真。",
+                    advice: "友谊需要呼吸空间。意识到朋友是独立的个体。学会放手，关系反而更长久。"
                 };
             }
         }
@@ -471,15 +568,13 @@
             showPage('page-intro');
         }
 
-        // 生成图片逻辑
         function saveReport() {
-            const btn = document.getElementById('save-text');
-            const originalText = btn.innerText;
-            btn.innerText = "生成中...";
+            const btn = document.getElementById('save-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '生成中...';
             
             const area = document.getElementById('capture-area');
             
-            // 使用 html2canvas
             if(typeof html2canvas !== 'undefined') {
                 html2canvas(area, {
                     scale: 2,
@@ -489,14 +584,14 @@
                     const imgData = canvas.toDataURL("image/png");
                     document.getElementById('generated-img').src = imgData;
                     document.getElementById('img-modal').classList.add('show');
-                    btn.innerText = originalText;
+                    btn.innerHTML = originalText;
                 }).catch(err => {
                     alert("生成失败，请直接手机截屏保存");
-                    btn.innerText = originalText;
+                    btn.innerHTML = originalText;
                 });
             } else {
-                alert("生成图片组件加载失败（网络问题），请直接手机截屏");
-                btn.innerText = originalText;
+                alert("组件加载中，请稍后再试或直接截屏");
+                btn.innerHTML = originalText;
             }
         }
 
